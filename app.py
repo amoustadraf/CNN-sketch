@@ -39,6 +39,9 @@ if uploaded:
     with torch.no_grad():
         pred = model(tensor)
         probs = torch.softmax(pred, dim=1)
-        confidence, predicted = torch.max(probs, 1)
-
-    st.header(f"Prediction: {classes[predicted]} ({confidence.item()*100:.2f}%)")
+        top3 = torch.topk(probs, 3) # Get top 3 predictions
+    st.subheader("Top 3 Predictions:")
+    for i in range(3):
+        label = classes[top3.indices[0][i]]
+        conf = top3.values[0][i].item() * 100
+        st.write(f"{label} — {conf:.2f}%")

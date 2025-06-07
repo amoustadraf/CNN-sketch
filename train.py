@@ -3,26 +3,58 @@ from torch.utils.data import DataLoader, TensorDataset
 from model import SketchCNN
 import numpy as np
 from torch.utils.data import random_split # Importing necessary libraries. random_split is used to split the dataset into training and validation sets.
+from torchvision import transforms # Importing transforms for data preprocessing.
+
+transform = transforms.Compose([
+    transforms.RandomHorizontalFlip(), # Randomly flips the image horizontally
+    transforms.RandomRotation(10), # Randomly rotates the image by 10 degrees
+    transforms.RandomResizedCrop(28, scale=(0.9, 1.0)), # Randomly crops the image to 28x28 pixels, with a scale between 80% and 100% of the original size
+    transforms.ToTensor(), # Converts the image to a PyTorch tensor
+])
+# ^^This is a series of transformations that will be applied to the images in the dataset.
+
+# Since my dataset is already in memory, not loaded via ImageFolder, so transforms won't work directly. Therefore, we create a custom dataset class to apply the transformations.
+class AugmentedDataset(torch.utils.data.Dataset):
+    def __init__(self, images, labels, transform=None):
+        self.images = images
+        self.labels = labels
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.images)
+
+    def __getitem__(self, idx):
+        img = self.images[idx]
+        label = self.labels[idx]
+
+        # Convert the image to a PIL image for transformations
+        img = transforms.ToPILImage()(img)  # Convert the tensor to a PIL image
+        if self.transform:
+            img = self.transform(img) # Apply the transformations
+        return img, label
+    
 
 
 data = np.load("./dataset/quickdraw_data.npz")
 images, labels = data["images"], data["labels"]
 # PyTorch only works with its own data type called tensor (like a smart matrix)
-tensor_x = torch.Tensor(images) # Convert images to float tensors
-tensor_y = torch.LongTensor(labels) # Turns the labels into integers (for classification)
+##### tensor_x = torch.Tensor(images) # Convert images to float tensors
+##### tensor_y = torch.LongTensor(labels) # Turns the labels into integers (for classification)
+
+images_tensor = torch.Tensor(images)
+
+labels_tensor = torch.LongTensor(labels)
+dataset = AugmentedDataset(images_tensor, labels_tensor, transform=transform)
 
 # We are adding validation set (80/20 split) to the dataset.
-total_size = len(tensor_x) # Gets the total number of samples in the dataset (images).
+total_size = len(dataset) # Gets the total number of samples in the dataset (images).
 
 train_size = int(0.8* total_size) # 80% of the dataset will be used for training.
 val_size = total_size - train_size # The remaining 20% will be used for validation.
-
-
-dataset = TensorDataset(tensor_x, tensor_y) # Creates a dataset from the tensors. This is a PyTorch dataset, which is a collection of data samples and their corresponding labels.
-train_dataset, val_dataset = random_split(dataset, [train_size, val_size]) # Splits the dataset into training and validation sets.
+train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
 
 # Separate into 2 loaders. 
-train_loader = DataLoader(dataset, batch_size=32, shuffle=True) 
+train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True) 
 val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False) # Creates data loaders for the training and validation datasets.
 # ^^Creates a data loader, which is an iterable over the dataset. It allows us to iterate over the dataset in batches, which is useful for training models. 
 # The `shuffle=True` argument shuffles the dataset at every epoch, which helps with training. 
