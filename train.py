@@ -4,6 +4,7 @@ from model import SketchCNN
 import numpy as np
 from torch.utils.data import random_split # Importing necessary libraries. random_split is used to split the dataset into training and validation sets.
 from torchvision import transforms # Importing transforms for data preprocessing.
+from sklearn.metrics import classification_report, confusion_matrix
 
 transform = transforms.Compose([
     transforms.RandomHorizontalFlip(), # Randomly flips the image horizontally
@@ -98,3 +99,29 @@ for epoch in range(epochs):
     model.train() # Sets the model back to training mode for the next epoch.
 torch.save(model.state_dict(), "sketch_cnn.pth") # Saves the model's state dictionary (i.e., the model's parameters) to a file called "sketch_cnn.pth". This allows us to load the model later without having to retrain it.
 print("Training done!")
+# === Classification report & confusion matrix ===
+model.eval()
+all_preds = []
+all_labels = []
+with torch.no_grad():
+    for inputs, targets in val_loader:
+        outputs = model(inputs)
+        preds = outputs.argmax(dim=1)
+        all_preds.append(preds.cpu().numpy())
+        all_labels.append(targets.cpu().numpy())
+
+all_preds = np.concatenate(all_preds)
+all_labels = np.concatenate(all_labels)
+
+# Define class names in the same order
+classes = [
+    "Airplane", "Apple", "Basketball", "Bicycle", "Book",
+    "Circle", "Cloud", "Diamond", "Pizza", "Smiley Face",
+    "Toilet", "Triangle", "T-Shirt"
+]
+
+print("=== CLASSIFICATION REPORT ===")
+print(classification_report(all_labels, all_preds, target_names=classes, digits=4))
+
+print("=== CONFUSION MATRIX ===")
+print(confusion_matrix(all_labels, all_preds))
