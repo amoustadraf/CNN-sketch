@@ -65,7 +65,7 @@ model = SketchCNN(num_classes=len(set(labels)))
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
-epochs = 15
+epochs = 30
 for epoch in range(epochs):
     running_loss = 0.0 # initializes the running loss for this epoch. At the end of the epoch, this will give us the average loss for the epoch.
     for inputs, labels in train_loader:
