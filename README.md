@@ -25,10 +25,21 @@ Input (1x28x28 grayscale)
 
 ---
 
+### Heatmap
+![Heatmap](images/Heatmap.png)
+
+### t-SNE Plots
+![3D tSNE](images/3D_tSNE.png)
+![2D tSNE](images/2D_tSNE.png)
+
+---
+
 ## 🧪 To Run Locally
 
 ```bash
+
 git clone https://github.com/amoustadraf/CNN-sketch
 cd CNN-sketch  # <- or whatever folder name you chose when cloning
 pip install -r requirements.txt
 streamlit run app/app.py
+
