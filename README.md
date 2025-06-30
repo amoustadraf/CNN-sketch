@@ -42,4 +42,9 @@ git clone https://github.com/amoustadraf/CNN-sketch
 cd CNN-sketch  # <- or whatever folder name you chose when cloning
 pip install -r requirements.txt
 streamlit run app/app.py
+```
+---
 
+## 📘 License
+
+This project is open-source and available under the [MIT License](LICENSE).
